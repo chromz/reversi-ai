@@ -3,5 +3,7 @@ project (Reversi_AI)
 
 set (Reversi_AI_VERSION_MAJOR 0)
 set (Reversi_AI_VERSION_MINOR 1)
+set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 add_subdirectory (reversi)
 
