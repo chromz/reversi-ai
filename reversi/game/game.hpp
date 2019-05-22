@@ -2,6 +2,7 @@
 #ifndef REVERSI_PLAYER_H
 #define REVERSI_PLAYER_H
 
+#include <condition_variable>
 #include <mutex>
 #include <sio_client.h>
 #include <string>
@@ -19,6 +20,9 @@ namespace reversi
 	private:
 		const std::string host;
 		const int port;
+		std::mutex mtx;
+		std::condition_variable condition;
+		bool stop = false;
 		int board[REVERSI_BOARD_SIZE];
 		sio::client handler;
 		std::string name;

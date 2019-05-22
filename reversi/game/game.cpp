@@ -94,13 +94,13 @@ void reversi::game::start(const std::string &name, const int tourid)
 	handler.set_fail_listener(std::bind(&game::on_failure, this));
 
 	auto aux_on_ready = sio::socket::event_listener_aux(
-		std::bind(&game::on_ready, this, 
+		std::bind(&game::on_ready, this,
 			std::placeholders::_1,
 			std::placeholders::_2,
 			std::placeholders::_3,
 			std::placeholders::_4));
 	auto aux_on_finish = sio::socket::event_listener_aux(
-		std::bind(&game::on_finish, this, 
+		std::bind(&game::on_finish, this,
 			std::placeholders::_1,
 			std::placeholders::_2,
 			std::placeholders::_3,
@@ -111,6 +111,10 @@ void reversi::game::start(const std::string &name, const int tourid)
 		std::bind(&game::on_ok_signin, this, std::placeholders::_1));
 	handler.socket()->on("ready", aux_on_ready);
 	handler.socket()->on("finish", aux_on_finish);
-	// Game mainloop temporal solution
-	while (true) {}
+	// Wait until threads notify to stop waiting;
+	{
+		std::unique_lock<std::mutex> lock(mtx);
+		condition.wait(lock, [&](){ return stop; });
+	}
+	handler.close();
 }
