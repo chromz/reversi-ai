@@ -3,13 +3,27 @@
 
 #include <iostream>
 #include <functional>
+#include <vector>
 
 #include "game.hpp"
 
 reversi::game::game(const std::string &host, const int port)
 	: host(host),
-	  port(port)
+	  port(port),
+	  tourid(0)
 {
+}
+
+void reversi::game::print_board()
+{
+	std::cout << "Board" << std::endl;
+	for (unsigned i = 0; i < REVERSI_BOARD_SIZE; i++) {
+		if (i % 8 == 0) {
+			std::cout << std::endl;
+		}
+		std::cout << " " << board[i] << " ";
+	}
+	std::cout << std::endl;
 }
 
 void reversi::game::on_connect()
@@ -39,10 +53,29 @@ void reversi::game::on_ok_signin(sio::event &event)
 	std::cout << "Registration completed" << std::endl;
 }
 
+
 void reversi::game::on_ready(std::string const &name,
 			sio::message::ptr const &data,
 			bool is_ack, sio::message::list &ack_resp)
 {
+	std::cout << "Ready" << std::endl;
+	auto game_id = data->get_map()["game_id"];
+	auto player_id = data->get_map()["player_turn_id"];
+	std::vector<sio::message::ptr> board_msg = data->get_map()["board"]->
+		get_vector();
+	for(unsigned i = 0; i < REVERSI_BOARD_SIZE; i++) {
+		board[i] = board_msg[i]->get_int();
+	}
+	print_board();
+	std::cout << "Enter value:" << std::endl;
+	int movement;
+	std::cin >> movement;
+	sio::message::ptr msg = sio::object_message::create();
+	msg->get_map()["tournament_id"] = sio::int_message::create(tourid);
+	msg->get_map()["player_turn_id"] = player_id;
+	msg->get_map()["game_id"] = game_id;
+	msg->get_map()["movement"] = sio::int_message::create(movement);
+	handler.socket()->emit("play", msg);
 }
 
 void reversi::game::on_finish(std::string const &name,

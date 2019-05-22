@@ -6,6 +6,8 @@
 #include <sio_client.h>
 #include <string>
 
+#define REVERSI_BOARD_SIZE 64
+
 namespace reversi
 {
 	class game
@@ -17,9 +19,12 @@ namespace reversi
 	private:
 		const std::string host;
 		const int port;
+		int board[REVERSI_BOARD_SIZE];
 		sio::client handler;
 		std::string name;
 		int tourid;
+
+		void print_board();
 
 		void on_connect();
 		void on_disconnect(
