@@ -5,6 +5,7 @@
 
 #include <array>
 #include <boost/optional.hpp>
+#include <random>
 #include <vector>
 #include "state.hpp"
 
@@ -26,6 +27,7 @@ namespace reversi
 
 		state current_state;
 		int current_depth;
+		std::random_device rd;
 
 		int win_tile;
 

@@ -233,7 +233,10 @@ boost::optional<reversi::state> reversi::ai::minimaxab_r()
 int reversi::ai::predict_move()
 {
 	// auto valid_states = get_next_states(current_state);
-	// return valid_states[0].pos;
+	// std::mt19937 rng(rd());
+	// std::uniform_int_distribution<int> uni(0, valid_states.size());
+	// auto random_integer = uni(rng);
+	// return valid_states[random_integer].pos;
 	if (auto state = minimaxab_r()) {
 		return (*state).pos;
 	}
