@@ -117,6 +117,7 @@ std::vector<reversi::state> reversi::ai::get_next_states()
 		for (int y = 0; y < REVERSI_COL_LEN; y++) {
 			test.board = board;
 			if (check_board(test, x, y)) {
+				test.pos = y * REVERSI_ROW_LEN + x;
 				states.emplace_back(test);
 			}
 		}
@@ -128,16 +129,6 @@ std::vector<reversi::state> reversi::ai::get_next_states()
 int reversi::ai::predict_move()
 {
 	auto valid_states = get_next_states();
-	for (int i = 0; i < valid_states.size(); i++) {
-		std::cout << "Board" << std::endl;
-		for (unsigned j = 0; j < REVERSI_BOARD_SIZE; j++) {
-			if (j % 8 == 0) {
-				std::cout << std::endl;
-			}
-			std::cout << " " << valid_states[i].board[j] << " ";
-		}
-		std::cout << std::endl;
-	}
-	return 26;
+	return valid_states[0].pos;
 }
 
