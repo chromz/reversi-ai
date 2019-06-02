@@ -1,6 +1,6 @@
 // Rodrigo Custodio
 
-
+#include <array>
 #include <iostream>
 #include <functional>
 #include <vector>
@@ -50,11 +50,13 @@ void reversi::game::on_ready(std::string const &name,
 	auto player_id = data->get_map()["player_turn_id"];
 	std::vector<sio::message::ptr> board_msg = data->get_map()["board"]->
 		get_vector();
-	int board[REVERSI_BOARD_SIZE];
+	std::array<int, REVERSI_BOARD_SIZE> board;
 	for(unsigned i = 0; i < REVERSI_BOARD_SIZE; i++) {
 		board[i] = board_msg[i]->get_int();
 	}
 	reversi_ai.set_board(board);
+	reversi_ai.set_tile(player_id->get_int());
+	reversi_ai.print_board(); // Remember to remove
 	int movement = reversi_ai.predict_move();
 	sio::message::ptr msg = sio::object_message::create();
 	msg->get_map()["tournament_id"] = sio::int_message::create(tourid);
@@ -72,7 +74,7 @@ void reversi::game::on_finish(std::string const &name,
 	auto player_id = data->get_map()["player_turn_id"];
 	std::vector<sio::message::ptr> board_msg = data->get_map()["board"]->
 		get_vector();
-	int board[REVERSI_BOARD_SIZE];
+	std::array<int, REVERSI_BOARD_SIZE> board;
 	for(unsigned i = 0; i < REVERSI_BOARD_SIZE; i++) {
 		board[i] = board_msg[i]->get_int();
 	}
