@@ -8,7 +8,7 @@
 int main(int argc, char *argv[])
 {
 	if (argc != 5) {
-		std::cout << "Usage: <host> <port>"
+		std::cout << "Usage: <host> <port> "
 			     "<name> <tournament_id>" << std::endl;
 		return 1;
 	}

@@ -14,18 +14,6 @@ reversi::game::game(const std::string &host, const int port)
 {
 }
 
-void reversi::game::print_board()
-{
-	std::cout << "Board" << std::endl;
-	for (unsigned i = 0; i < REVERSI_BOARD_SIZE; i++) {
-		if (i % 8 == 0) {
-			std::cout << std::endl;
-		}
-		std::cout << " " << board[i] << " ";
-	}
-	std::cout << std::endl;
-}
-
 void reversi::game::on_connect()
 {
 	std::cout << "Connection established" << std::endl;
@@ -58,18 +46,16 @@ void reversi::game::on_ready(std::string const &name,
 			sio::message::ptr const &data,
 			bool is_ack, sio::message::list &ack_resp)
 {
-	std::cout << "Ready" << std::endl;
 	auto game_id = data->get_map()["game_id"];
 	auto player_id = data->get_map()["player_turn_id"];
 	std::vector<sio::message::ptr> board_msg = data->get_map()["board"]->
 		get_vector();
+	int board[REVERSI_BOARD_SIZE];
 	for(unsigned i = 0; i < REVERSI_BOARD_SIZE; i++) {
 		board[i] = board_msg[i]->get_int();
 	}
-	print_board();
-	std::cout << "Enter value:" << std::endl;
-	int movement;
-	std::cin >> movement;
+	reversi_ai.set_board(board);
+	int movement = reversi_ai.predict_move();
 	sio::message::ptr msg = sio::object_message::create();
 	msg->get_map()["tournament_id"] = sio::int_message::create(tourid);
 	msg->get_map()["player_turn_id"] = player_id;
@@ -82,6 +68,22 @@ void reversi::game::on_finish(std::string const &name,
 			sio::message::ptr const &data,
 			bool is_ack, sio::message::list &ack_resp)
 {
+	auto game_id = data->get_map()["game_id"];
+	auto player_id = data->get_map()["player_turn_id"];
+	std::vector<sio::message::ptr> board_msg = data->get_map()["board"]->
+		get_vector();
+	int board[REVERSI_BOARD_SIZE];
+	for(unsigned i = 0; i < REVERSI_BOARD_SIZE; i++) {
+		board[i] = board_msg[i]->get_int();
+	}
+	reversi_ai.set_board(board);
+	std::cout << "FINISH" << std::endl;
+	reversi_ai.print_board();
+	sio::message::ptr msg= sio::object_message::create();
+	msg->get_map()["tournament_id"] = sio::int_message::create(tourid);
+	msg->get_map()["player_turn_id"] = player_id;
+	msg->get_map()["game_id"] = game_id;
+	handler.socket()->emit("player_ready", msg);
 }
 
 void reversi::game::start(const std::string &name, const int tourid)

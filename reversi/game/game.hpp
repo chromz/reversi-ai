@@ -7,7 +7,8 @@
 #include <sio_client.h>
 #include <string>
 
-#define REVERSI_BOARD_SIZE 64
+#include "ai/ai.hpp"
+
 
 namespace reversi
 {
@@ -22,13 +23,11 @@ namespace reversi
 		const int port;
 		std::mutex mtx;
 		std::condition_variable condition;
+		ai reversi_ai;
 		bool stop = false;
-		int board[REVERSI_BOARD_SIZE];
 		sio::client handler;
 		std::string name;
 		int tourid;
-
-		void print_board();
 
 		void on_connect();
 		void on_disconnect(
