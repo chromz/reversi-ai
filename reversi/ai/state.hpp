@@ -13,8 +13,9 @@ namespace reversi
 	struct state
 	{
 		std::array<int, REVERSI_BOARD_SIZE> board;
-		int points;
 		int pos;
+		int black_count;
+		int white_count;
 	};
 }
 

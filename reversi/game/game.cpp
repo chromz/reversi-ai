@@ -7,10 +7,14 @@
 
 #include "game.hpp"
 
+#define TREE_DEPTH 100
+
+
 reversi::game::game(const std::string &host, const int port)
 	: host(host),
 	  port(port),
-	  tourid(0)
+	  tourid(0),
+	  reversi_ai(TREE_DEPTH)
 {
 }
 
@@ -50,11 +54,19 @@ void reversi::game::on_ready(std::string const &name,
 	auto player_id = data->get_map()["player_turn_id"];
 	std::vector<sio::message::ptr> board_msg = data->get_map()["board"]->
 		get_vector();
+	reversi::state state;
 	std::array<int, REVERSI_BOARD_SIZE> board;
 	for(unsigned i = 0; i < REVERSI_BOARD_SIZE; i++) {
-		board[i] = board_msg[i]->get_int();
+		state.board[i] = board_msg[i]->get_int();
+		if (state.board[i] == WHITE) {
+			state.white_count++;
+		}
+
+		if (state.board[i] == BLACK) {
+			state.black_count++;
+		}
 	}
-	reversi_ai.set_board(board);
+	reversi_ai.set_state(state);
 	reversi_ai.set_tile(player_id->get_int());
 	reversi_ai.print_board(); // Remember to remove
 	int movement = reversi_ai.predict_move();
@@ -74,11 +86,19 @@ void reversi::game::on_finish(std::string const &name,
 	auto player_id = data->get_map()["player_turn_id"];
 	std::vector<sio::message::ptr> board_msg = data->get_map()["board"]->
 		get_vector();
+	reversi::state state;
 	std::array<int, REVERSI_BOARD_SIZE> board;
 	for(unsigned i = 0; i < REVERSI_BOARD_SIZE; i++) {
-		board[i] = board_msg[i]->get_int();
+		state.board[i] = board_msg[i]->get_int();
+		if (state.board[i] == WHITE) {
+			state.white_count++;
+		}
+
+		if (state.board[i] == BLACK) {
+			state.black_count++;
+		}
 	}
-	reversi_ai.set_board(board);
+	reversi_ai.set_state(state);
 	std::cout << "FINISH" << std::endl;
 	reversi_ai.print_board();
 	sio::message::ptr msg= sio::object_message::create();
