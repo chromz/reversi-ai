@@ -216,10 +216,11 @@ boost::optional<reversi::state> reversi::ai::minimaxab_r()
 	int best_state_index = -1;
 	auto valid_states = get_next_states(current_state);
 	int max_value = alpha;
-	for (int i = valid_states.size(); i >= 0; i--) {
+	for (int i = valid_states.size() - 1; i >= 0; i--) {
 		int res = minimaxab(valid_states[i], current_depth - 1, alpha,
 				    beta, false);
 		if (res > max_value) {
+			max_value = res;
 			best_state_index = i;
 		}
 	}
@@ -231,6 +232,8 @@ boost::optional<reversi::state> reversi::ai::minimaxab_r()
 
 int reversi::ai::predict_move()
 {
+	// auto valid_states = get_next_states(current_state);
+	// return valid_states[0].pos;
 	if (auto state = minimaxab_r()) {
 		return (*state).pos;
 	}
