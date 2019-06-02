@@ -1,1 +1,6 @@
 # reversi-ai
+
+Dependencies:
+```
+libsocketiocpp
+```
