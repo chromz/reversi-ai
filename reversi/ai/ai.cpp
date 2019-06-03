@@ -146,12 +146,12 @@ bool reversi::ai::check_board(reversi::state &test,
 	return is_valid;
 }
 
-inline int reversi::ai::eval(const state &cstate)
+inline float reversi::ai::eval(const state &cstate)
 {
 	if (win_tile == WHITE) {
-		return cstate.white_count - cstate.black_count;
+		return (float) (cstate.white_count - cstate.black_count);
 	} else {
-		return cstate.black_count - cstate.white_count;
+		return (float) (cstate.black_count - cstate.white_count);
 	}
 }
 
@@ -173,8 +173,8 @@ reversi::ai::get_next_states(const reversi::state &cstate, int tile)
 	return states;
 }
 
-int reversi::ai::minimaxab(const reversi::state &cstate, int depth, int alpha,
-			   int beta, bool max, int tile)
+float reversi::ai::minimaxab(const reversi::state &cstate, int depth,
+			     float alpha, float beta, bool max, int tile)
 {
 	if (depth == 0 || cstate.white_count == 0 || cstate.black_count == 0 ||
 	    REVERSI_BOARD_SIZE -
@@ -190,56 +190,56 @@ int reversi::ai::minimaxab(const reversi::state &cstate, int depth, int alpha,
 	// for (auto &state : valid_states) {
 	// 	print_board(state);
 	// }
-	// int *a = NULL;
-	// *a = 3;
 
 	// No more childs
 	if (valid_states.empty()) {
-		return 0;
+		return eval(cstate);
 	}
 	// Check node type
 	if (max) {
-		int max_value = std::numeric_limits<int>::min();
+		float max_value = std::numeric_limits<float>::min();
 		for (auto &child_state : valid_states) {
-			int res = minimaxab(child_state, depth - 1, alpha,
-					    beta, false, enemy);
+			float res = minimaxab(child_state, depth - 1, alpha,
+					      beta, false, enemy);
 			max_value = std::max(max_value, res);
+
 			alpha = std::max(alpha, res);
 			// Check for pruning
 			if (beta <= alpha) {
 				break;
 			}
-			return max_value;
 		}
+		return max_value;
 	} else {
-		int min_value = std::numeric_limits<int>::max();
+		float min_value = std::numeric_limits<float>::max();
 		for(auto &child_state : valid_states) {
-			int res = minimaxab(child_state, depth - 1,
+			float res = minimaxab(child_state, depth - 1,
 					    alpha, beta, true, enemy);
 			min_value = std::min(min_value, res);
 			beta = std::min(beta, res);
 			if (beta <= alpha) {
 				break;
 			}
-			return min_value;
+
 		}
+		return min_value;
 	}
-	// Should never happen
-	return 0;
+
 }
 
 boost::optional<reversi::state> reversi::ai::minimaxab_r()
 {
 	// First run is a max
-	int alpha = std::numeric_limits<int>::min();
-	int beta = std::numeric_limits<int>::max();
+	float alpha = std::numeric_limits<float>::min();
+	float beta = std::numeric_limits<float>::max();
 	int best_state_index = -1;
 	int enemy = (win_tile == WHITE) ? BLACK : WHITE;
 	auto valid_states = get_next_states(current_state, win_tile);
-	int max_value = alpha;
+	float max_value = alpha;
 	for (int i = valid_states.size() - 1; i >= 0; i--) {
-		int res = minimaxab(valid_states[i], current_depth - 1, alpha,
+		float res = minimaxab(valid_states[i], current_depth - 1, alpha,
 				    beta, false, enemy);
+		std::cout << "JUE" << std::endl;
 		if (res > max_value) {
 			max_value = res;
 			best_state_index = i;
@@ -256,17 +256,12 @@ int reversi::ai::predict_move()
 	// print_board();
 	// std::cout << "MOVES" << std::endl;
 	// auto valid_states = get_next_states(current_state, win_tile);
-	// for (auto &state : valid_states) {
-	// }
-	// if (valid_states.empty()) {
-	// 	int *i = NULL;
-	// 	*i = 3;
-	// }
 	// std::mt19937 rng(rd());
 	// std::uniform_int_distribution<int> uni(0, valid_states.size());
 	// auto random_integer = uni(rng);
 	// return valid_states[random_integer].pos;
 	if (auto state = minimaxab_r()) {
+		std::cout << "ONE TURN" << std::endl;
 		return (*state).pos;
 	}
 	std::cout << "ERROR: Fatal error ocurred while predicting move"

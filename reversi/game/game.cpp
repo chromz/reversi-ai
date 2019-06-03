@@ -7,7 +7,7 @@
 
 #include "game.hpp"
 
-#define TREE_DEPTH 50000
+#define TREE_DEPTH 2000
 
 
 reversi::game::game(const std::string &host, const int port)
@@ -70,7 +70,6 @@ void reversi::game::on_ready(std::string const &name,
 	}
 	reversi_ai.set_state(state);
 	reversi_ai.set_tile(player_id->get_int());
-	// reversi_ai.print_board(); // Remember to remove
 	int movement = reversi_ai.predict_move();
 	sio::message::ptr msg = sio::object_message::create();
 	msg->get_map()["tournament_id"] = sio::int_message::create(tourid);
