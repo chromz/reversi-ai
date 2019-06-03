@@ -7,7 +7,7 @@
 
 #include "game.hpp"
 
-#define TREE_DEPTH 2000
+#define TREE_DEPTH 5
 
 
 reversi::game::game(const std::string &host, const int port)

@@ -197,7 +197,7 @@ float reversi::ai::minimaxab(const reversi::state &cstate, int depth,
 	}
 	// Check node type
 	if (max) {
-		float max_value = std::numeric_limits<float>::min();
+		float max_value = -std::numeric_limits<float>::max();
 		for (auto &child_state : valid_states) {
 			float res = minimaxab(child_state, depth - 1, alpha,
 					      beta, false, enemy);
@@ -230,8 +230,8 @@ float reversi::ai::minimaxab(const reversi::state &cstate, int depth,
 boost::optional<reversi::state> reversi::ai::minimaxab_r()
 {
 	// First run is a max
-	float alpha = std::numeric_limits<float>::min();
 	float beta = std::numeric_limits<float>::max();
+	float alpha = -beta;
 	int best_state_index = -1;
 	int enemy = (win_tile == WHITE) ? BLACK : WHITE;
 	auto valid_states = get_next_states(current_state, win_tile);
@@ -239,7 +239,6 @@ boost::optional<reversi::state> reversi::ai::minimaxab_r()
 	for (int i = valid_states.size() - 1; i >= 0; i--) {
 		float res = minimaxab(valid_states[i], current_depth - 1, alpha,
 				    beta, false, enemy);
-		std::cout << "JUE" << std::endl;
 		if (res > max_value) {
 			max_value = res;
 			best_state_index = i;
@@ -261,7 +260,6 @@ int reversi::ai::predict_move()
 	// auto random_integer = uni(rng);
 	// return valid_states[random_integer].pos;
 	if (auto state = minimaxab_r()) {
-		std::cout << "ONE TURN" << std::endl;
 		return (*state).pos;
 	}
 	std::cout << "ERROR: Fatal error ocurred while predicting move"
