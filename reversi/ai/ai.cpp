@@ -16,6 +16,12 @@
 
 #include "ai.hpp"
 
+#define FISRT_HEU_W 0.1F
+#define SECOND_HEU_W 10.F
+#define THIRD_HEU_W 70.F
+#define FOURTH_HEU_W 10.F
+#define FIFTH_HEU_W 500.F
+
 
 reversi::ai::ai(int depth)
 	: current_depth(depth)
@@ -157,11 +163,83 @@ bool reversi::ai::check_board(reversi::state &test,
 
 inline float reversi::ai::eval(const state &cstate)
 {
+	int enemy = (win_tile == WHITE) ? BLACK : WHITE;
+
+	// First heuristic
+	float simple_diff;
+	// Second heuristic
+	float owned_percentage = 0.;
+	// Third heuristic
+	float valid_moves_heu = 0.F;
+	int valid_moves = count_valid_moves(cstate, win_tile);
+	int enemy_valid_moves = count_valid_moves(cstate, enemy);
 	if (win_tile == WHITE) {
-		return (float) (cstate.white_count - cstate.black_count);
+		simple_diff = (float) (cstate.white_count - cstate.black_count);
+		float sum = (float) (cstate.white_count + cstate.black_count);
+		if (simple_diff < 0) {
+			// I'm losing in this state
+			owned_percentage = -(cstate.black_count) / sum * 100.F;
+			valid_moves_heu = - enemy_valid_moves / sum * 100.F;
+		} else {
+			owned_percentage = (cstate.white_count) / sum * 100.F;
+			valid_moves_heu = valid_moves / sum * 100.F;
+		}
 	} else {
-		return (float) (cstate.black_count - cstate.white_count);
+		simple_diff = (float) (cstate.black_count - cstate.white_count);
+		float sum = (float) (cstate.white_count + cstate.black_count);
+		if (simple_diff < 0) {
+			// I'm losing in this state
+			owned_percentage = -(cstate.white_count) / sum * 100.F;
+			valid_moves_heu = - enemy_valid_moves / sum * 100.F;
+		} else {
+			owned_percentage = (cstate.black_count) / sum * 100.F;
+			valid_moves_heu = valid_moves / sum * 100.F;
+		}
 	}
+
+
+
+	// Static weights acoording to Paul G.
+	// @ An Analysis of Heuristics in Othello
+	float static_weights[REVERSI_BOARD_SIZE] = {
+		4.F, -3.F, 2.F, 2.F, 2.F, 2.F, -3.F, 4.F,
+		-3.F, -4.F, -1.F, -1.F, -1.F, -1.F, -4.F, -3.F,
+		2.F, -1.F, 1.F, 0.F, 0.F, 1.F, -1.F, 2.F,
+		2.F, -1.F, 0.F, 1.F, 1.F, 0.F, -1.F, 2.F,
+		2.F, -1.F, 0.F, 1.F, 1.F, 0.F, -1.F, 2.F,
+		2.F, -1.F, 1.F, 0.F, 0.F, 1.0F, -1.F, 2.F,
+		-3.F, -4.F, -1.F, -1.F, -1.F, -1.F, -4.F, -3.F,
+		-4.F, -3.F, 2.F, 2.F, 2.F, 2.F -3.F, 4.F,
+	};
+
+	// Fourth heuristic
+	float sum_board = 0.F;
+	for (int i = 0; i < REVERSI_BOARD_SIZE; i++) {
+		if (cstate.board[i] == win_tile) {
+			sum_board += static_weights[i];
+		} else if (cstate.board[i] == enemy) {
+			sum_board += static_weights[i];
+		}
+	}
+
+	// Fifth heuristic
+	float corner_heu;
+	int corners = 0;
+	int corner_coords[4] = {0, 7, 56, 63};
+	for (int i = 0; i < 4; i++) {
+		int value = cstate.board[corner_coords[i]];
+		if (value == win_tile) {
+			corners += 1;
+		} else if (value == enemy) {
+			corners -= 1;
+		}
+	}
+	corner_heu = 25.F * ((float) corners);
+
+	return FISRT_HEU_W * simple_diff + SECOND_HEU_W * owned_percentage +
+		THIRD_HEU_W * valid_moves_heu + FOURTH_HEU_W * sum_board +
+		FIFTH_HEU_W * corner_heu;
+
 }
 
 std::vector<reversi::state>
@@ -180,6 +258,21 @@ reversi::ai::get_next_states(const reversi::state &cstate, int tile)
 	}
 
 	return states;
+}
+
+int reversi::ai::count_valid_moves(const state &cstate, int tile)
+{
+	int count = 0;
+	reversi::state test;
+	for(int x = 0; x < REVERSI_ROW_LEN; x++) {
+		for (int y = 0; y < REVERSI_COL_LEN; y++) {
+			test = cstate; // Create a copy
+			if (check_board(test, x, y, tile)) {
+				count++;
+			}
+		}
+	}
+	return count;
 }
 
 float reversi::ai::minimaxab(const reversi::state &cstate, int depth,

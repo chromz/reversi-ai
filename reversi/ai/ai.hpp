@@ -4,7 +4,6 @@
 #define REVERSI_AI_H
 
 #include <boost/optional.hpp>
-#include <boost/asio/thread_pool.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread/mutex.hpp>
 
@@ -48,6 +47,7 @@ namespace reversi
 		bool check_board(state &test, int x, int y, int tile);
 		std::vector<state> get_next_states(const state &cstate,
 						   int tile);
+		int count_valid_moves(const state &cstate, int tile);
 		float minimaxab(const state &cstate, int depth, float alpha,
 				float beta, bool max, int tile);
 
