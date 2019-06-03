@@ -40,6 +40,18 @@ void reversi::ai::print_board()
 	std::cout << std::endl;
 }
 
+void reversi::ai::print_board(const reversi::state &cstate)
+{
+	std::cout << "Board" << std::endl;
+	for (unsigned i = 0; i < REVERSI_BOARD_SIZE; i++) {
+		if (i % 8 == 0) {
+			std::cout << std::endl;
+		}
+		std::cout << " " << cstate.board[i] << " ";
+	}
+	std::cout << std::endl;
+}
+
 inline int reversi::ai::pos(const std::array<int, REVERSI_BOARD_SIZE> &board,
 			    int x, int y)
 {
@@ -66,7 +78,7 @@ bool reversi::ai::check_board(reversi::state &test,
 		return false;
 	}
 	set(test_board, x, y, tile);
-	int enemy = (tile == 1) ? 2 : 1;
+	int enemy = (tile == WHITE) ? BLACK : WHITE;
 
 	const int move_size = 16;
 	int moves[move_size] = {
@@ -144,14 +156,14 @@ inline int reversi::ai::eval(const state &cstate)
 }
 
 std::vector<reversi::state>
-reversi::ai::get_next_states(const reversi::state &cstate)
+reversi::ai::get_next_states(const reversi::state &cstate, int tile)
 {
 	std::vector<reversi::state> states;
 	reversi::state test;
 	for(int x = 0; x < REVERSI_ROW_LEN; x++) {
 		for (int y = 0; y < REVERSI_COL_LEN; y++) {
 			test = cstate; // Create a copy
-			if (check_board(test, x, y, win_tile)) {
+			if (check_board(test, x, y, tile)) {
 				test.pos = y * REVERSI_ROW_LEN + x;
 				states.emplace_back(test);
 			}
@@ -162,27 +174,36 @@ reversi::ai::get_next_states(const reversi::state &cstate)
 }
 
 int reversi::ai::minimaxab(const reversi::state &cstate, int depth, int alpha,
-			   int beta, bool max)
+			   int beta, bool max, int tile)
 {
 	if (depth == 0 || cstate.white_count == 0 || cstate.black_count == 0 ||
 	    REVERSI_BOARD_SIZE -
 	    (cstate.black_count + cstate.white_count) == 0) {
+		std::cout << depth << std::endl;
 		return eval(cstate);
 	}
 
 	// Generate next states
-	auto valid_states = get_next_states(cstate);
+	// print_board(cstate);
+	// std::cout << "MOVES " << tile << " " << win_tile << std::endl;
+	int enemy = (tile == WHITE) ? BLACK : WHITE;
+	auto valid_states = get_next_states(cstate, tile);
+	// for (auto &state : valid_states) {
+	// 	print_board(state);
+	// }
+	// int *a = NULL;
+	// *a = 3;
 
 	// No more childs
 	if (valid_states.empty()) {
-		return eval(cstate);
+		return 0;
 	}
 	// Check node type
 	if (max) {
 		int max_value = std::numeric_limits<int>::min();
 		for (auto &child_state : valid_states) {
 			int res = minimaxab(child_state, depth - 1, alpha,
-					    beta, false);
+					    beta, false, enemy);
 			max_value = std::max(max_value, res);
 			alpha = std::max(alpha, res);
 			// Check for pruning
@@ -195,7 +216,7 @@ int reversi::ai::minimaxab(const reversi::state &cstate, int depth, int alpha,
 		int min_value = std::numeric_limits<int>::max();
 		for(auto &child_state : valid_states) {
 			int res = minimaxab(child_state, depth - 1,
-					    alpha, beta, true);
+					    alpha, beta, true, enemy);
 			min_value = std::min(min_value, res);
 			beta = std::min(beta, res);
 			if (beta <= alpha) {
@@ -214,11 +235,12 @@ boost::optional<reversi::state> reversi::ai::minimaxab_r()
 	int alpha = std::numeric_limits<int>::min();
 	int beta = std::numeric_limits<int>::max();
 	int best_state_index = -1;
-	auto valid_states = get_next_states(current_state);
+	int enemy = (win_tile == WHITE) ? BLACK : WHITE;
+	auto valid_states = get_next_states(current_state, win_tile);
 	int max_value = alpha;
 	for (int i = valid_states.size() - 1; i >= 0; i--) {
 		int res = minimaxab(valid_states[i], current_depth - 1, alpha,
-				    beta, false);
+				    beta, false, enemy);
 		if (res > max_value) {
 			max_value = res;
 			best_state_index = i;
@@ -232,7 +254,15 @@ boost::optional<reversi::state> reversi::ai::minimaxab_r()
 
 int reversi::ai::predict_move()
 {
+	// print_board();
+	// std::cout << "MOVES" << std::endl;
 	// auto valid_states = get_next_states(current_state);
+	// for (auto &state : valid_states) {
+	// }
+	// if (valid_states.empty()) {
+	// 	int *i = NULL;
+	// 	*i = 3;
+	// }
 	// std::mt19937 rng(rd());
 	// std::uniform_int_distribution<int> uni(0, valid_states.size());
 	// auto random_integer = uni(rng);

@@ -34,13 +34,15 @@ namespace reversi
 		int eval(const state &cstate);
 		int pos(const std::array<int, REVERSI_BOARD_SIZE> &board,
 			int x, int y);
+		void print_board(const state &cstate);
 		void set(std::array<int, REVERSI_BOARD_SIZE> &board,
 			int x, int y, int val);
 		bool is_inside(int x, int y);
 		bool check_board(state &test, int x, int y, int tile);
-		std::vector<state> get_next_states(const state &cstate);
+		std::vector<state> get_next_states(const state &cstate,
+						   int tile);
 		int minimaxab(const state &cstate, int depth, int alpha,
-			      int beta, bool max);
+			      int beta, bool max, int tile);
 
 		// Re-entrant version of minimaxab
 		boost::optional<state>  minimaxab_r();

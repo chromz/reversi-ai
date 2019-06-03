@@ -7,7 +7,7 @@
 
 #include "game.hpp"
 
-#define TREE_DEPTH 100000
+#define TREE_DEPTH 50000
 
 
 reversi::game::game(const std::string &host, const int port)
@@ -55,6 +55,8 @@ void reversi::game::on_ready(std::string const &name,
 	std::vector<sio::message::ptr> board_msg = data->get_map()["board"]->
 		get_vector();
 	reversi::state state;
+	state.white_count = 0;
+	state.black_count = 0;
 	std::array<int, REVERSI_BOARD_SIZE> board;
 	for(unsigned i = 0; i < REVERSI_BOARD_SIZE; i++) {
 		state.board[i] = board_msg[i]->get_int();
