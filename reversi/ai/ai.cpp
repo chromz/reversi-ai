@@ -21,6 +21,7 @@
 #define THIRD_HEU_W 70.F
 #define FOURTH_HEU_W 10.F
 #define FIFTH_HEU_W 500.F
+#define SIXTH_HEY_W 300.F
 
 
 reversi::ai::ai(int depth)
@@ -161,6 +162,51 @@ bool reversi::ai::check_board(reversi::state &test,
 	return is_valid;
 }
 
+int reversi::ai::get_closeness(const state &cstate, int i, int *close_corners,
+			       int size, int enemy)
+{
+	int count = 0;
+	if (i == 0) {
+		for (int j = 0; j < 3; j++) {
+			int tile_val = cstate.board[close_corners[i]];
+			if (tile_val == win_tile) {
+				count++;
+			} else if (tile_val == enemy) {
+				count--;
+			}
+		}
+	} else if (i == 1) {
+		for (int j = 3; j < 6; j++) {
+			int tile_val = cstate.board[close_corners[i]];
+			if (tile_val == win_tile) {
+				count++;
+			} else if (tile_val == enemy) {
+				count--;
+			}
+		}
+	} else if (i == 2) {
+		for (int j = 6; j < 9; j++) {
+			int tile_val = cstate.board[close_corners[i]];
+			if (tile_val == win_tile) {
+				count++;
+			} else if (tile_val == enemy) {
+				count--;
+			}
+		}
+	} else if (i == 3) {
+		for (int j = 9; j < 12; j++) {
+			int tile_val = cstate.board[close_corners[i]];
+			if (tile_val == win_tile) {
+				count++;
+			} else if (tile_val == enemy) {
+				count--;
+			}
+		}
+	}
+
+	return count;
+}
+
 inline float reversi::ai::eval(const state &cstate)
 {
 	int enemy = (win_tile == WHITE) ? BLACK : WHITE;
@@ -224,21 +270,36 @@ inline float reversi::ai::eval(const state &cstate)
 
 	// Fifth heuristic
 	float corner_heu;
+	float closeness_heu;
 	int corners = 0;
 	int corner_coords[4] = {0, 7, 56, 63};
+	// Sixth heuristic
+	int corner_closeness = 0;
+	int close_corners[12] = {
+		1, 9, 8,
+		6, 14, 15,
+		57, 49, 48,
+		55, 54, 62,
+	};
 	for (int i = 0; i < 4; i++) {
 		int value = cstate.board[corner_coords[i]];
 		if (value == win_tile) {
 			corners += 1;
 		} else if (value == enemy) {
 			corners -= 1;
+		} else {
+			corner_closeness = get_closeness(cstate, i,
+							 close_corners,
+							 12, enemy);
 		}
 	}
 	corner_heu = 25.F * ((float) corners);
+	closeness_heu = -12.5F * corner_closeness;
+
 
 	return FISRT_HEU_W * simple_diff + SECOND_HEU_W * owned_percentage +
 		THIRD_HEU_W * valid_moves_heu + FOURTH_HEU_W * sum_board +
-		FIFTH_HEU_W * corner_heu;
+		FIFTH_HEU_W * corner_heu + SIXTH_HEY_W * closeness_heu;
 
 }
 
@@ -373,19 +434,19 @@ int reversi::ai::predict_move()
 {
 	// print_board();
 	// std::cout << "MOVES" << std::endl;
-	// auto valid_states = get_next_states(current_state, win_tile);
-	// std::mt19937 rng(rd());
-	// std::uniform_int_distribution<int> uni(0, valid_states.size());
-	// auto random_integer = uni(rng);
-	// return valid_states[random_integer].pos;
+	auto valid_states = get_next_states(current_state, win_tile);
+	std::mt19937 rng(rd());
+	std::uniform_int_distribution<int> uni(0, valid_states.size());
+	auto random_integer = uni(rng);
+	return valid_states[random_integer].pos;
 	// std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-	if (auto state = minimaxab_r()) {
-		// std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
-		// std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() <<std::endl;
-		return (*state).pos;
-	}
-	std::cout << "ERROR: Fatal error ocurred while predicting move"
-		  << std::endl;
+	// if (auto state = minimaxab_r()) {
+	// 	// std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+	// 	// std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() <<std::endl;
+	// 	return (*state).pos;
+	// }
+	// std::cout << "ERROR: Fatal error ocurred while predicting move"
+	// 	  << std::endl;
 	return 0;
 }
 

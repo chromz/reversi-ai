@@ -37,6 +37,8 @@ namespace reversi
 
 		int win_tile;
 
+		int get_closeness(const state &cstate, int i,
+				  int *close_corners, int size, int enemy);
 		float eval(const state &cstate);
 		int pos(const std::array<int, REVERSI_BOARD_SIZE> &board,
 			int x, int y);
