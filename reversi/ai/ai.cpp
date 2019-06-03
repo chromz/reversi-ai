@@ -179,7 +179,6 @@ int reversi::ai::minimaxab(const reversi::state &cstate, int depth, int alpha,
 	if (depth == 0 || cstate.white_count == 0 || cstate.black_count == 0 ||
 	    REVERSI_BOARD_SIZE -
 	    (cstate.black_count + cstate.white_count) == 0) {
-		std::cout << depth << std::endl;
 		return eval(cstate);
 	}
 
@@ -256,7 +255,7 @@ int reversi::ai::predict_move()
 {
 	// print_board();
 	// std::cout << "MOVES" << std::endl;
-	// auto valid_states = get_next_states(current_state);
+	// auto valid_states = get_next_states(current_state, win_tile);
 	// for (auto &state : valid_states) {
 	// }
 	// if (valid_states.empty()) {
