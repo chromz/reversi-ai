@@ -1,9 +1,17 @@
 // Rodrigo Custodio
 
+#include <boost/asio/post.hpp>
+#include <boost/thread/lock_guard.hpp>
+#include <boost/asio/thread_pool.hpp>
+
+
+
 #include <algorithm>
 #include <iostream>
 #include <limits>
+#include <thread>
 #include <utility>
+
 
 #include "ai.hpp"
 
@@ -227,23 +235,40 @@ float reversi::ai::minimaxab(const reversi::state &cstate, int depth,
 
 }
 
+void reversi::ai::minimax_worker(const state &cstate, int depth, float alpha,
+				 float beta, bool max, int tile, int index)
+{
+	float res = minimaxab(cstate, depth, alpha,
+			      beta, max, tile);
+	{
+		boost::lock_guard<boost::mutex> guard(max_mutex);
+		if (res > last_max_value) {
+			last_max_value = res;
+			best_state_index = index;
+		}
+	}
+
+}
+
 boost::optional<reversi::state> reversi::ai::minimaxab_r()
 {
 	// First run is a max
 	float beta = std::numeric_limits<float>::max();
+	unsigned numthreads = std::thread::hardware_concurrency();
+	boost::asio::thread_pool threadpool(numthreads);
 	float alpha = -beta;
-	int best_state_index = -1;
 	int enemy = (win_tile == WHITE) ? BLACK : WHITE;
 	auto valid_states = get_next_states(current_state, win_tile);
-	float max_value = alpha;
-	for (int i = valid_states.size() - 1; i >= 0; i--) {
-		float res = minimaxab(valid_states[i], current_depth - 1, alpha,
-				    beta, false, enemy);
-		if (res > max_value) {
-			max_value = res;
-			best_state_index = i;
-		}
+	last_max_value = alpha;
+	best_state_index = -1;
+	for (int i = 0; i < valid_states.size(); i++) {
+		boost::asio::post(threadpool,
+			boost::bind(&ai::minimax_worker, this, valid_states[i],
+				    current_depth - 1, alpha,
+				    beta, false, enemy, i));
 	}
+	// io_service.stop();
+	threadpool.join();
 	if (best_state_index == -1) {
 		return boost::none;
 	}

@@ -8,7 +8,7 @@ if (NOT SIO_LIB OR NOT SIO_PATH)
 	message (FATAL_ERROR "Socket io library or headers not found")
 endif()
 find_package (Threads)
-find_package (Boost)
+find_package (Boost COMPONENTS thread REQUIRED)
 set (GAME_SRC_FILES reversi.cpp game/game.cpp ai/ai.cpp)
 
 add_executable (reversi ${GAME_SRC_FILES})

@@ -3,8 +3,12 @@
 #ifndef REVERSI_AI_H
 #define REVERSI_AI_H
 
-#include <array>
 #include <boost/optional.hpp>
+#include <boost/asio/thread_pool.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread/mutex.hpp>
+
+#include <array>
 #include <random>
 #include <vector>
 #include "state.hpp"
@@ -28,6 +32,9 @@ namespace reversi
 		state current_state;
 		int current_depth;
 		std::random_device rd;
+		boost::mutex max_mutex;
+		int best_state_index;
+		float last_max_value;
 
 		int win_tile;
 
@@ -42,7 +49,10 @@ namespace reversi
 		std::vector<state> get_next_states(const state &cstate,
 						   int tile);
 		float minimaxab(const state &cstate, int depth, float alpha,
-			      float beta, bool max, int tile);
+				float beta, bool max, int tile);
+
+		void minimax_worker(const state &cstate, int depth, float alpha,
+				    float beta, bool max, int tile, int index);
 
 		// Re-entrant version of minimaxab
 		boost::optional<state>  minimaxab_r();
