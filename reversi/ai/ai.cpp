@@ -288,9 +288,9 @@ inline float reversi::ai::eval(const state &cstate)
 		} else if (value == enemy) {
 			corners -= 1;
 		} else {
-			corner_closeness = get_closeness(cstate, i,
-							 close_corners,
-							 12, enemy);
+			corner_closeness += get_closeness(cstate, i,
+							  close_corners,
+							  12, enemy);
 		}
 	}
 	corner_heu = 25.F * ((float) corners);
@@ -434,19 +434,19 @@ int reversi::ai::predict_move()
 {
 	// print_board();
 	// std::cout << "MOVES" << std::endl;
-	auto valid_states = get_next_states(current_state, win_tile);
-	std::mt19937 rng(rd());
-	std::uniform_int_distribution<int> uni(0, valid_states.size());
-	auto random_integer = uni(rng);
-	return valid_states[random_integer].pos;
+	// auto valid_states = get_next_states(current_state, win_tile);
+	// std::mt19937 rng(rd());
+	// std::uniform_int_distribution<int> uni(0, valid_states.size());
+	// auto random_integer = uni(rng);
+	// return valid_states[random_integer].pos;
 	// std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-	// if (auto state = minimaxab_r()) {
-	// 	// std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
-	// 	// std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() <<std::endl;
-	// 	return (*state).pos;
-	// }
-	// std::cout << "ERROR: Fatal error ocurred while predicting move"
-	// 	  << std::endl;
+	if (auto state = minimaxab_r()) {
+		// std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+		// std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() <<std::endl;
+		return (*state).pos;
+	}
+	std::cout << "ERROR: Fatal error ocurred while predicting move"
+		  << std::endl;
 	return 0;
 }
 
